@@ -11,13 +11,6 @@ from typing import Annotated, Any
 BASE_URL = URL("http://time-table.sicsr.ac.in/report.php")
 
 
-"""
-"Brief description","Area","Room","Start time","End time","Duration","Full Description","Type","Created by","Confirmation status","Last updated"
-
-
-"""
-
-
 def dt_conv(raw: str) -> datetime:
     return datetime.strptime(raw, "%H:%M:%S - %A %d %B %Y")
 
