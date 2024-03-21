@@ -60,7 +60,7 @@ class MainController(Controller):
                         continue
                     found.append(entry)
         entries = [item.dump() for item in found]
-        context = {"entries": entries} if entries else {"error": "No classes found!"}
+        context = {"result": entries} if entries else {"error": "No classes found!"}
         return Template(
             self.template,
             context=context,
