@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    input {
+        background-color: var(--overlay0);
+        border: none;
+    }
+    button {
+        background-color: var(--mantle);
+        border: none;
+    }
+    button:hover {
+        background-color: var(--pink);
+        color: var(--base);
+    }
+    textarea {
+        background-color: var(--surface0);
+        border: 1px solid var(--surface1);
+    }
+
+    .form-items {
+        gap: 10px;
+    }
+
+    .result {
+        padding: 100px;
+    }
+
+    table {
+        border: 2px solid var(--text);
+        padding: 10px;
+        border-collapse: collapse;
+    }
+
+    table td {
+        padding: 10px;
+    }
+
+    table th {
+        color: var(--rosewater);
+    }
+
+    table th, td {
+        border: 2px solid var(--surface1);
+    }
+
+    .error {
+        color: var(--red);
+    }
+
+</style>
+
+Welcome! Configure your filters to get started:
+
+<form method="post">
+    <div class="container column form-items">
+    <div>
+        <label for="Date"> Date: </label>
+        <input id="Date" name="date" type="date"></input>
+    </div>
+    <div>
+        <textarea id="config" name="config" rows="20" cols="150">
+# Sample Config file
+[types]
+
+    # Each type has a name (as it appears in the timetable filter dropdown)
+    # and a set of rules for further filtering; eg. to include only a particular division for an elective type.
+    # Both name and rules are regular expressions.
+
+    [types.division]
+    name = "BCA \\(IV\\) - Div\\. A" # Remember to escape characters like . and () to avoid them being parsed as regex syntax
+    rules = []
+
+    [types.elective1]
+    name = "Elective - Group I"
+    rules = ["Creative Writing"] # Only include entries with Creative Writing in their description
+
+    [types.elective2]
+    name = "Elective - Group II"
+    rules = ["Div\\.? ?A"] # Only include entries with either of (DivA, Div.A, Div A or Div. A)
+
+
+        </textarea>
+    </div>
+    <button type="submit"> Submit </button>
+    </div>
+</form>
+
+<div class="result">
+    {% if result %}
+    <table>
+        <thead>
+            <tr>
+            {% for item in result[0] %}
+                <th> {{ item }} </th>
+            {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in result %}
+            <tr>
+                {% for key in result[0] %}
+                <td> {{ item[key] }}</td>    
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        {% if error %}
+            <span class="error"> {{ error }} </span>
+        {% endif %}
+    {% endif %}
+</div>
+
+
+{% endblock %}

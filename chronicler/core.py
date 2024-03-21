@@ -31,7 +31,7 @@ DateTime = Annotated[datetime, BeforeValidator(dt_conv)]
 class Entry(BaseModel):
     brief_desc: str = Field(validation_alias="Brief description")
     area: str = Field(validation_alias="Area")
-    room: str = Field(validation_alias="Room")
+    room: int = Field(validation_alias="Room")
     start: DateTime = Field(validation_alias="Start time")
     end: DateTime = Field(validation_alias="End time")
     duration: Annotated[timedelta, BeforeValidator(td_conv)] = Field(
@@ -42,6 +42,9 @@ class Entry(BaseModel):
     creator: str = Field(validation_alias="Created by")
     status: str = Field(validation_alias="Confirmation status")
     last_updated: DateTime = Field(validation_alias="Last updated")
+
+    def url(self) -> str:
+        return f'<a href="/search?room={self.room}&start={self.start.hour}&end={self.end.hour}</a>'
 
     def dump(self) -> dict[str, Any]:
         return {
