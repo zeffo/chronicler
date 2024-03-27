@@ -21,27 +21,46 @@
 
     .form-items {
         gap: 10px;
+        padding: 30px;
     }
+
+
+    .form-grid {
+        display: grid;
+        column-gap: 50px;
+        row-gap: 20px;
+        grid-template-columns: repeat(2, 1fr);
+    }
+
 
     .result {
         padding: 100px;
     }
 
-    table {
+    .rule {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        padding: 5px;
+        border: 1px solid var(--surface1);
+        border-radius: 10px;
+    }
+
+    #ResultTable {
         border: 2px solid var(--text);
         padding: 10px;
         border-collapse: collapse;
     }
 
-    table td {
+    #ResultTable td {
         padding: 10px;
     }
 
-    table th {
+    #ResultTable th {
         color: var(--rosewater);
     }
 
-    table th, td {
+    #ResultTable th, td {
         border: 2px solid var(--surface1);
     }
 
@@ -51,45 +70,31 @@
 
 </style>
 
+SESSION: {{ session }}
+
 Welcome! Configure your filters to get started:
 
 <form method="post">
     <div class="container column form-items">
-    <div>
-        <label for="Date"> Date: </label>
-        <input id="Date" name="date" type="date"></input>
-    </div>
-    <div>
-        <textarea id="config" name="config" rows="20" cols="150">
-# Sample Config file
-[types]
-
-    # Each type has a name (as it appears in the timetable filter dropdown)
-    # and a set of rules for further filtering; eg. to include only a particular division for an elective type.
-    # Both name and rules are regular expressions.
-
-    [types.division]
-    name = "BCA \\(IV\\) - Div\\. A" # Remember to escape characters like . and () to avoid them being parsed as regex syntax
-    rules = []
-
-    [types.elective1]
-    name = "Elective - Group I"
-    rules = ["Creative Writing"] # Only include entries with Creative Writing in their description
-
-    [types.elective2]
-    name = "Elective - Group II"
-    rules = ["Div\\.? ?A"] # Only include entries with either of (DivA, Div.A, Div A or Div. A)
-
-
-        </textarea>
-    </div>
-    <button type="submit"> Submit </button>
+        <div class="form-grid">
+            <div>
+                Start:
+                <input id="start" name="start" type="date" />
+            </div>
+            <div>
+                End:
+                <input id="end" name="end" type="date" />
+            </div>
+        </div>
+    </table>
+    <button id="add_rule" type="button"> Add Rule </button>
+    <button id="submit" type="button"> Submit </button>
     </div>
 </form>
 
 <div class="result">
     {% if result %}
-    <table>
+    <table id="ResultTable">
         <thead>
             <tr>
             {% for item in result[0] %}
@@ -113,6 +118,44 @@ Welcome! Configure your filters to get started:
         {% endif %}
     {% endif %}
 </div>
+
+
+<script>
+    $( document ).ready( () => {
+        var count = $(".form-grid").length - 2;
+        $(document).on("click", ".add_filter", (e) => {
+            let parent = $(e.target).parent();
+            parent.append(`<input class="filter" type='text'/>`)
+        });
+
+        $(document).on("click", "#add_rule", () => {
+            let rule = `
+                <div class="rule">
+                    <div> Name: <input type="text" class="rule_name" /></div> <br>
+                    <button type="button" class="add_filter"> Add Filter </button>
+                </div>
+            `;
+            $(".form-grid").append(rule); 
+        });
+
+        $(document).on("click", "#submit", () => {
+            let payload = {};
+            payload["start"] = $("#start").val();
+            payload["end"] = $("#end").val();
+            payload["types"] = {}
+            $(".rule").each( (i, rule) => {
+                let items = [];
+                $(rule).children(".filter").each( (j, filter) => {
+                    items.push($(filter).val());
+                });
+                payload["types"][$(rule).find(".rule_name").first().val()] = items;
+            });
+            $.ajax({"data": JSON.stringify(payload), "method": "POST", "contentType": "application/json"})
+        });
+    });
+
+
+</script>
 
 
 {% endblock %}

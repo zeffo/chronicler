@@ -1,35 +1,45 @@
 import re
-import tomllib
+import secrets
+import os
 from datetime import datetime
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 from aiohttp import ClientSession
-from litestar import Controller, get, post
+from pydantic import BaseModel, BeforeValidator
+from litestar import Controller, Request, get, post
 from litestar.datastructures import State
 from litestar.response import Template
 from litestar import Litestar
 from litestar.contrib.jinja import JinjaTemplateEngine
 from litestar.template.config import TemplateConfig
+from litestar.config.cors import CORSConfig
+from litestar.config.csrf import CSRFConfig
+from litestar.config.allowed_hosts import AllowedHostsConfig
 from litestar.static_files import create_static_files_router
 from litestar.enums import RequestEncodingType
 from litestar.params import Body
-from pydantic import BaseModel, BeforeValidator
+from litestar.contrib.sqlalchemy.base import UUIDAuditBase, UUIDBase
+from litestar.contrib.sqlalchemy.plugins import (
+    AsyncSessionConfig,
+    SQLAlchemyAsyncConfig,
+    SQLAlchemyInitPlugin,
+)
+from litestar.middleware.session.server_side import ServerSideSessionConfig
+from litestar.stores.file import FileStore
 
 from .core import fetch, Entry
 
-
-class Type(BaseModel):
-    name: str  # name of the type
-    rules: list[str]  # regex rules to apply to the type
+# from .models import User, Rule, Filter
 
 
-class Config(BaseModel):
-    types: dict[str, Type]
+class Payload(BaseModel):
+    start: datetime
+    end: datetime
+    types: dict[str, list[str]]  # type: [regex]
 
-
-class ConfigData(BaseModel):
-    date: datetime
-    config: Annotated[Config, BeforeValidator(lambda s: tomllib.loads(s))]
+    def __init__(self, **data: Any):
+        print(data)
+        super().__init__(**data)
 
 
 class MainController(Controller):
@@ -39,32 +49,19 @@ class MainController(Controller):
     template = "index.html"
 
     @get()
-    async def home(self, state: State) -> Template:
-        return Template(self.template)
+    async def home(self, request: Request, state: State) -> Template:
+        return Template(self.template, context={"session": request.session})
 
     @post()
     async def render_table(
         self,
+        request: Request,
         state: State,
-        data: Annotated[ConfigData, Body(media_type=RequestEncodingType.URL_ENCODED)],
+        data: Payload,
     ) -> Template:
-        report = list(await fetch(start=data.date, end=data.date, session=state.http))
-        types = data.config.types.values()
-        found: list[Entry] = []
-        for entry in report:
-            for t in types:
-                if re.search(t.name, entry.type):
-                    if t.rules and not any(
-                        [re.search(rgx, entry.full_desc) for rgx in t.rules]
-                    ):
-                        continue
-                    found.append(entry)
-        entries = [item.dump() for item in found]
-        context = {"result": entries} if entries else {"error": "No classes found!"}
-        return Template(
-            self.template,
-            context=context,
-        )
+        if s := request.session:
+            request.set_session(Payload)
+        return Template(self.template, context={"session": request.session})
 
     @get("/about")
     async def about(self) -> Template:
@@ -80,6 +77,38 @@ async def close_http_session(app: Litestar):
         await session.close()
 
 
+cors_config = CORSConfig(
+    allow_origins=[
+        "https://chronicler.zeffo.me",
+        "https://chronicler.up.railway.app",
+        "127.0.0.1",
+        "localhost",
+    ]
+)
+allowed_hosts = AllowedHostsConfig(
+    allowed_hosts=[
+        "chronicler.up.railway.app",
+        "chronicler.zeffo.me",
+        "localhost",
+        "127.0.0.1",
+    ]
+)
+
+session_config = AsyncSessionConfig(expire_on_commit=False)
+sqlalchemy_config = SQLAlchemyAsyncConfig(
+    connection_string=os.getenv("DATABASE_URL"),
+    session_config=session_config,
+)
+sqlalchemy_plugin = SQLAlchemyInitPlugin(config=sqlalchemy_config)
+
+
+async def on_startup() -> None:
+    """Initializes the database."""
+    async with sqlalchemy_config.get_engine().begin() as conn:
+        await conn.run_sync(UUIDBase.metadata.create_all)
+        await conn.run_sync(UUIDAuditBase.metadata.create_all)
+
+
 app = Litestar(
     route_handlers=[
         MainController,
@@ -89,6 +118,11 @@ app = Litestar(
         directory=Path("templates"),
         engine=JinjaTemplateEngine,
     ),
-    on_startup=[init_http_session],
+    plugins=[sqlalchemy_plugin],
+    on_startup=[init_http_session, on_startup],
     on_shutdown=[close_http_session],
+    cors_config=cors_config,
+    allowed_hosts=allowed_hosts,
+    middleware=[ServerSideSessionConfig().middleware],
+    stores={"sessions": FileStore(path=Path("session_data"))},
 )
