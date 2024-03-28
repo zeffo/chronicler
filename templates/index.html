@@ -24,14 +24,25 @@
         padding: 30px;
     }
 
-
-    .form-grid {
-        display: grid;
-        column-gap: 50px;
-        row-gap: 20px;
-        grid-template-columns: repeat(2, 1fr);
+    .form-filters {
+        gap: 4px;
     }
 
+    .form-dates {
+        gap: 20px;
+    }
+
+    .form-grid {
+        display: flex;
+        flex-wrap: wrap;
+        max-width: 900px;
+        gap: 10px;
+    }
+
+    .rule_name {
+        background-color: var(--overlay0);
+        border: 1px solid var(--surface1);
+    }
 
     .result {
         padding: 100px;
@@ -41,50 +52,100 @@
         display: flex;
         flex-direction: column;
         gap: 3px;
-        padding: 5px;
+        padding: 10px;
         border: 1px solid var(--surface1);
         border-radius: 10px;
     }
 
-    #ResultTable {
-        border: 2px solid var(--text);
-        padding: 10px;
+    .error {
+        color: var(--red);
+        text-align: center;
+    }
+
+    .delete_rule:hover, .delete_filter:hover {
+        background-color: var(--red) !important;
+    }
+
+    #submit:hover {
+        background-color: var(--green);
+    }
+
+    .result_items {
+        display: flex;
+        flex-wrap: wrap;
+        flex-direction: column;
+        padding: 30px;
+    }
+
+    .result_items * {
+        text-align: left;
+    }
+
+    .result_date {
+        color: var(--peach);
+        margin: 5px;
+    }
+
+    #result .result_table {
+        border: 1px solid var(--surface0);
+        padding: 15px;
+        gap: 40px;
         border-collapse: collapse;
     }
 
-    #ResultTable td {
-        padding: 10px;
+    #result .result_table th, td {
+        border: 1px solid var(--surface1);
+        padding: 8px;
+    }
+    .result_table_head > tr > th {
+        color: var(--flamingo);
     }
 
-    #ResultTable th {
-        color: var(--rosewater);
+    #add_rule, .add_filter, #submit, .delete_rule {
+        height: 35px;
     }
 
-    #ResultTable th, td {
-        border: 2px solid var(--surface1);
-    }
-
-    .error {
-        color: var(--red);
-    }
 
 </style>
-
-SESSION: {{ session }}
 
 Welcome! Configure your filters to get started:
 
 <form method="post">
     <div class="container column form-items">
-        <div class="form-grid">
+        <div class="container row form-dates">
             <div>
                 Start:
-                <input id="start" name="start" type="date" />
+                <input id="start" name="start" type="date" value="{{ preload['start'] }}"/>
             </div>
             <div>
                 End:
-                <input id="end" name="end" type="date" />
+                <input id="end" name="end" type="date" value="{{ preload['end'] }}" />
             </div>
+        </div>
+        <div class="form-grid">
+            {% for type in preload["types"] %}
+                <div class="rule">
+                    <div> Type: 
+                        <select class="rule_name">
+                            {% for stype in types %}
+                                {% if type == stype %}
+                                    {% set selected="selected" %}
+                                {% else %}
+                                    {% set selected="" %}
+                                {% endif %}
+                                <option value="{{ stype }}" {{ selected }} > {{ stype }} </option>
+                            {% endfor %}
+                        </select> 
+                    </div> <br>
+                    <div class="form-filters container column">
+                        {% for filter in preload["types"][type] %}
+                        <div><input type='text' class='filter' value="{{ filter }}" size=43/><button type='button' class='delete_filter'>X</button></div>
+                        {% endfor %}
+                    </div>
+                    <button type="button" class="add_filter"> Add Filter </button>
+                    <button type="button" class="delete_rule"> Delete Rule </button>
+                </div>
+            {% endfor %}
         </div>
     </table>
     <button id="add_rule" type="button"> Add Rule </button>
@@ -92,65 +153,90 @@ Welcome! Configure your filters to get started:
     </div>
 </form>
 
-<div class="result">
-    {% if result %}
-    <table id="ResultTable">
-        <thead>
-            <tr>
-            {% for item in result[0] %}
-                <th> {{ item }} </th>
-            {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in result %}
-            <tr>
-                {% for key in result[0] %}
-                <td> {{ item[key] }}</td>    
-                {% endfor %}
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-        {% if error %}
-            <span class="error"> {{ error }} </span>
-        {% endif %}
-    {% endif %}
+<div id="result">
 </div>
-
 
 <script>
     $( document ).ready( () => {
         var count = $(".form-grid").length - 2;
         $(document).on("click", ".add_filter", (e) => {
-            let parent = $(e.target).parent();
-            parent.append(`<input class="filter" type='text'/>`)
+            let parent = $(e.target).parent().find(".form-filters").append("<div><input type='text' class='filter' size=43/><button class='delete_filter' type='button'>X</button></div>");
         });
 
         $(document).on("click", "#add_rule", () => {
             let rule = `
                 <div class="rule">
-                    <div> Name: <input type="text" class="rule_name" /></div> <br>
+                    <div> Type: 
+                        <select class="rule_name">
+                            {% for type in types %}
+                                <option value="{{ type }}"> {{ type }} </option>
+                            {% endfor %}
+                        </select> 
+                    </div> <br>
+                    <div class="form-filters container column"></div>
                     <button type="button" class="add_filter"> Add Filter </button>
+                    <button type="button" class="delete_rule"> Delete Rule </button>
                 </div>
             `;
             $(".form-grid").append(rule); 
         });
 
+        $(document).on("click", ".delete_rule", (e) => {
+            $(e.target).parent().remove();
+        });
+
+        $(document).on("click", ".delete_filter", (e) => {
+            $(e.target).parent().remove();
+        });
+
         $(document).on("click", "#submit", () => {
+            $("#result").children().remove();
             let payload = {};
             payload["start"] = $("#start").val();
             payload["end"] = $("#end").val();
-            payload["types"] = {}
+            payload["types"] = {};
             $(".rule").each( (i, rule) => {
                 let items = [];
-                $(rule).children(".filter").each( (j, filter) => {
+                $(rule).find(".filter").each( (j, filter) => {
                     items.push($(filter).val());
                 });
-                payload["types"][$(rule).find(".rule_name").first().val()] = items;
+                let rule_name = $(rule).find(".rule_name").first().val();
+                let target = payload["types"][rule_name];
+                if (target != null) {
+                    payload["types"][rule_name] = target.concat(items); // aggregate duplicate types in the same bucket
+                } else {
+                    payload["types"][rule_name] = items;
+                }
             });
-            $.ajax({"data": JSON.stringify(payload), "method": "POST", "contentType": "application/json"})
+            $.ajax({"data": JSON.stringify(payload), "method": "POST", "contentType": "application/json"}).done((data) => {
+                let result = $("#result");
+                for (const [date, entries] of Object.entries(data["entries"])) {
+                    result.append(`<div class='result_items'><div class="result_date">${date}</div></div>`) 
+                    if (entries.length == 0) {
+                        result.find(".result_date").last().append("<span class='error'> No entries found! </span>")
+                        continue;
+                    }
+                    let div = result.find(".result_items").last();
+                    div.append("<table class='result_table'></table>")
+                    let table = div.find(".result_table").last();
+                    table.append("<thead class='result_table_head'></thead>");
+                    let thead = table.find("thead").last();
+                    thead.append("<tr></tr>")
+                    let theaders = thead.find("tr");
+                    for (const header of data["fields"]) {
+                        theaders.append(`<th>${header}</th>`)
+                    }
+                    table.append("<tbody class='result_table_body'></tbody>");
+                    let tbody = table.find("tbody").last();
+                    for (const entry of entries) {
+                        tbody.append("<tr></tr>");
+                        let row = tbody.find("tr").last();
+                        for (const header of data["fields"]) {
+                            row.append(`<td>${entry[header]}</td>`) 
+                        }
+                    }
+                }
+            });
         });
     });
 

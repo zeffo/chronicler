@@ -1,7 +1,8 @@
 import re
 import secrets
 import os
-from datetime import datetime
+import time
+from datetime import datetime, date
 from pathlib import Path
 from typing import Annotated, Any
 from aiohttp import ClientSession
@@ -27,19 +28,30 @@ from litestar.contrib.sqlalchemy.plugins import (
 from litestar.middleware.session.server_side import ServerSideSessionConfig
 from litestar.stores.file import FileStore
 
-from .core import fetch, Entry
+from .core import TimetableClient, fetch, Entry
 
 # from .models import User, Rule, Filter
 
 
 class Payload(BaseModel):
-    start: datetime
-    end: datetime
+    start: date | None = None
+    end: date | None = None
     types: dict[str, list[str]]  # type: [regex]
 
     def __init__(self, **data: Any):
-        print(data)
         super().__init__(**data)
+
+    def get_start(self) -> date:
+        return self.start or datetime.now().date()
+
+    def get_end(self) -> date:
+        return self.end or datetime.now().date()
+
+
+class TimetableResponse(BaseModel):
+    entries: dict[date, list[dict[str, Any]]]
+    time: float
+    fields: list[str] = Entry.dump_fields
 
 
 class MainController(Controller):
@@ -50,18 +62,43 @@ class MainController(Controller):
 
     @get()
     async def home(self, request: Request, state: State) -> Template:
-        return Template(self.template, context={"session": request.session})
+        return Template(
+            self.template,
+            context={
+                "types": await state.client.get_types(),
+                "preload": request.session or {},
+            },
+        )
 
     @post()
-    async def render_table(
+    async def fetch_table(
         self,
         request: Request,
         state: State,
         data: Payload,
-    ) -> Template:
-        if s := request.session:
-            request.set_session(Payload)
-        return Template(self.template, context={"session": request.session})
+    ) -> TimetableResponse:
+        start = time.perf_counter()
+        request.set_session(data)
+        entries: dict[date, list[Entry]] = {}
+        items = await state.client.fetch(start=data.get_start(), end=data.get_end())
+        for item in items:
+            bucket = entries.setdefault(item.start.date(), [])
+            if item.type in data.types:
+                filters = data.types[item.type]
+                if not filters:
+                    bucket.append(item)
+                for filt in filters:
+                    if re.search(filt, item.full_desc):
+                        bucket.append(item)
+                        break
+        for bucket in entries.values():
+            bucket.sort(key=lambda e: e.start)
+
+        response: dict[date, list[dict[str, Any]]] = {}
+        for e, b in sorted(entries.items(), key=lambda t: t[0]):
+            response[e] = [i.dump() for i in b]
+
+        return TimetableResponse(entries=response, time=time.perf_counter() - start)
 
     @get("/about")
     async def about(self) -> Template:
@@ -69,7 +106,9 @@ class MainController(Controller):
 
 
 async def init_http_session(app: Litestar):
-    app.state.http = ClientSession()
+    session = ClientSession()
+    app.state.http = session
+    app.state.client = TimetableClient(session=session)
 
 
 async def close_http_session(app: Litestar):

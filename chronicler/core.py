@@ -5,7 +5,7 @@ from io import StringIO
 from pydantic import BaseModel, Field, BeforeValidator
 import csv
 
-from typing import Annotated, Any
+from typing import Annotated, Any, ClassVar
 
 
 BASE_URL = URL("http://time-table.sicsr.ac.in/report.php")
@@ -52,8 +52,16 @@ class Entry(BaseModel):
             "end": fmtdt(self.end),
             "class": self.full_desc,
             "room": self.room,
-            "duration": self.duration,
+            "duration": self.duration.seconds // 60,
         }
+
+    dump_fields: ClassVar[list[str]] = [
+        "start",
+        "end",
+        "class",
+        "room",
+        "duration",
+    ]
 
     def __str__(self):
         return f"{fmtdt(self.start)} - {fmtdt(self.end)}: {self.full_desc} ({self.duration}) - {self.status}"
@@ -188,3 +196,47 @@ async def fetch(
         session=session,
     )
     return map(lambda row: Entry.model_validate(row), reader)
+
+
+class TimetableClient:
+    def __init__(self, session: ClientSession):
+        self.session = session
+        self.__types: set[str] = set()
+
+    async def get_types(self):
+        if not self.__types:
+            start = datetime.now()
+            end = start + timedelta(weeks=4)
+            self.__types = {e.type for e in await self.fetch(start, end)}
+        items = list(self.__types)
+        items.sort()
+        return items
+
+    async def fetch(
+        self,
+        start: datetime,
+        end: datetime,
+        *,
+        areamatch: str = "",
+        roommatch: str = "",
+        typematch: list[str] = [],
+        namematch: str = "",
+        descrmatch: str = "",
+        creatormatch: str = "",
+        match_confirmed: int = 2,
+    ) -> list[Entry]:
+        # TODO: add caching here
+        return list(
+            await fetch(
+                start,
+                end,
+                areamatch=areamatch,
+                roommatch=roommatch,
+                typematch=typematch,
+                namematch=namematch,
+                descrmatch=descrmatch,
+                creatormatch=creatormatch,
+                match_confirmed=match_confirmed,
+                session=self.session,
+            )
+        )
