@@ -66,7 +66,7 @@ class MainController(Controller):
             self.template,
             context={
                 "types": await state.client.get_types(),
-                "preload": request.session or {},
+                "preload": request.session or {"types": []},
             },
         )
 
