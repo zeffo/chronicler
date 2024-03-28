@@ -122,6 +122,7 @@ cors_config = CORSConfig(
         "https://chronicler.up.railway.app",
         "127.0.0.1",
         "localhost",
+        "192.168.1.254",
     ]
 )
 allowed_hosts = AllowedHostsConfig(
@@ -130,6 +131,7 @@ allowed_hosts = AllowedHostsConfig(
         "chronicler.zeffo.me",
         "localhost",
         "127.0.0.1",
+        "192.168.1.254",
     ]
 )
 
