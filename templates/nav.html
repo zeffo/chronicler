@@ -9,6 +9,8 @@
     .navbar .nav-link {
         text-decoration: none;
         color: var(--blue);
+        font-size: 20px;
+        padding: 5px;
     }
 
     .navbar .nav-link:hover {
@@ -46,6 +48,6 @@
     };
     let frag = window.location.href.split("/")[3];
     if (frag != null) {
-        $(`#${map[frag]}`).css("text-decoration", "underline"); 
+        $(`#${map[frag]}`).css({"color": "var(--base)", "background-color": "var(--blue)"}); 
     };
 </script>

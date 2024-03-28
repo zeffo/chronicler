@@ -38,8 +38,7 @@ html, body {
 }
 
 .content {
-    padding: 50px;
-    margin-bottom: 100px; /* for the footer */ 
+    padding: 10px;
 }
 
 .centered {
@@ -68,4 +67,5 @@ body {
 * {
     color: var(--text);    
     font-family: "Iosevka Pride", monospace;
+    font-size: 13pt;
 }
