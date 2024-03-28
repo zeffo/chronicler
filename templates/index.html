@@ -1,4 +1,13 @@
 {% extends "base.html" %}
+
+
+{% block head %}
+    <meta property="og:description" content="a better way to view your SICSR timetable." />
+	<meta name="theme-color" content="#A6E3A1">
+	<title>chronicler</title>
+{% endblock %}
+
+
 {% block content %}
 
 <style>
@@ -105,6 +114,9 @@
         height: 35px;
     }
 
+    .timetaken {
+        color: var(--subtext0);
+    }
 
 </style>
 
@@ -210,6 +222,7 @@ Welcome! Configure your filters to get started:
             });
             $.ajax({"data": JSON.stringify(payload), "method": "POST", "contentType": "application/json"}).done((data) => {
                 let result = $("#result");
+                result.append(`<div class='timetaken'>Completed in ${data['time']}s</div>`)
                 for (const [date, entries] of Object.entries(data["entries"])) {
                     result.append(`<div class='result_items'><div class="result_date">${date}</div></div>`) 
                     if (entries.length == 0) {
