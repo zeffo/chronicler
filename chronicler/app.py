@@ -143,6 +143,7 @@ sqlalchemy_plugin = SQLAlchemyInitPlugin(config=sqlalchemy_config)
 
 async def on_startup() -> None:
     """Initializes the database."""
+    return
     async with sqlalchemy_config.get_engine().begin() as conn:
         await conn.run_sync(UUIDBase.metadata.create_all)
         await conn.run_sync(UUIDAuditBase.metadata.create_all)
@@ -157,7 +158,7 @@ app = Litestar(
         directory=Path("templates"),
         engine=JinjaTemplateEngine,
     ),
-    plugins=[sqlalchemy_plugin],
+    # plugins=[sqlalchemy_plugin],
     on_startup=[init_http_session, on_startup],
     on_shutdown=[close_http_session],
     cors_config=cors_config,
