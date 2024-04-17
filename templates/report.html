@@ -17,6 +17,7 @@
         {% endfor %}
       </tbody>
     </table>
+    <span class="error">This data is sourced from moodle and may not accurately reflect your actual attendance. Please consult faculty if you have any doubts!</span>
   </div>
 {% else %}
   <form class="moodle-login container column" method="post">
@@ -32,7 +33,7 @@
     </div>
     <button id="submit" type="submit" class="submit"> Login </button>
   </form>
-  <span id="note" class="subtext">Login with your moodle credentials. The report can take upto 20 seconds to generate.</span>
+  <span id="note" class="subtext">Login with your moodle credentials. The attendance report can take upto 20 seconds to generate.</span>
 
   <script>
     $("#submit").on("click", (e) => {
