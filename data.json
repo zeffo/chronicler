@@ -1,0 +1,118 @@
+{
+  "course": {
+    "id": "291",
+    "numsections": 4,
+    "sectionlist": ["1471", "1472", "1473", "1474", "1475"],
+    "editmode": false,
+    "highlighted": "Highlighted",
+    "maxsections": "52",
+    "baseurl": "https://lms.sicsr.ac.in/course/view.php?id=291",
+    "statekey": "1707302290_1713366289"
+  },
+  "section": [
+    {
+      "id": "1471",
+      "section": 0,
+      "number": 0,
+      "title": "General",
+      "hassummary": false,
+      "rawtitle": null,
+      "cmlist": ["690", "853"],
+      "visible": true,
+      "sectionurl": "https://lms.sicsr.ac.in/course/view.php?id=291#section-0",
+      "current": false,
+      "indexcollapsed": false,
+      "contentcollapsed": false,
+      "hasrestrictions": false
+    },
+    {
+      "id": "1472",
+      "section": 1,
+      "number": 1,
+      "title": "Topic 1",
+      "hassummary": false,
+      "rawtitle": null,
+      "cmlist": [],
+      "visible": true,
+      "sectionurl": "https://lms.sicsr.ac.in/course/view.php?id=291#section-1",
+      "current": false,
+      "indexcollapsed": false,
+      "contentcollapsed": false,
+      "hasrestrictions": false
+    },
+    {
+      "id": "1473",
+      "section": 2,
+      "number": 2,
+      "title": "Topic 2",
+      "hassummary": false,
+      "rawtitle": null,
+      "cmlist": [],
+      "visible": true,
+      "sectionurl": "https://lms.sicsr.ac.in/course/view.php?id=291#section-2",
+      "current": false,
+      "indexcollapsed": false,
+      "contentcollapsed": false,
+      "hasrestrictions": false
+    },
+    {
+      "id": "1474",
+      "section": 3,
+      "number": 3,
+      "title": "Topic 3",
+      "hassummary": false,
+      "rawtitle": null,
+      "cmlist": [],
+      "visible": true,
+      "sectionurl": "https://lms.sicsr.ac.in/course/view.php?id=291#section-3",
+      "current": false,
+      "indexcollapsed": false,
+      "contentcollapsed": false,
+      "hasrestrictions": false
+    },
+    {
+      "id": "1475",
+      "section": 4,
+      "number": 4,
+      "title": "Topic 4",
+      "hassummary": false,
+      "rawtitle": null,
+      "cmlist": [],
+      "visible": true,
+      "sectionurl": "https://lms.sicsr.ac.in/course/view.php?id=291#section-4",
+      "current": false,
+      "indexcollapsed": false,
+      "contentcollapsed": false,
+      "hasrestrictions": false
+    }
+  ],
+  "cm": [
+    {
+      "id": "690",
+      "anchor": "module-690",
+      "name": "Announcements",
+      "visible": true,
+      "sectionid": "1471",
+      "sectionnumber": 0,
+      "uservisible": true,
+      "hascmrestrictions": false,
+      "accessvisible": true,
+      "url": "https://lms.sicsr.ac.in/mod/forum/view.php?id=690",
+      "istrackeduser": true
+    },
+    {
+      "id": "853",
+      "anchor": "module-853",
+      "name": "Attendance",
+      "visible": true,
+      "sectionid": "1471",
+      "sectionnumber": 0,
+      "uservisible": true,
+      "hascmrestrictions": false,
+      "accessvisible": true,
+      "url": "https://lms.sicsr.ac.in/mod/attendance/view.php?id=853",
+      "istrackeduser": true,
+      "completionstate": 0
+    }
+  ]
+}

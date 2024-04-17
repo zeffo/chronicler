@@ -28,9 +28,8 @@ from litestar.contrib.sqlalchemy.plugins import (
 from litestar.middleware.session.server_side import ServerSideSessionConfig
 from litestar.stores.file import FileStore
 
-from .core import TimetableClient, fetch, Entry
-
-# from .models import User, Rule, Filter
+from .core import TimetableClient, Entry
+from .lms import Moodle, Report
 
 
 class Payload(BaseModel):
@@ -52,6 +51,11 @@ class TimetableResponse(BaseModel):
     entries: dict[date, list[dict[str, Any]]]
     time: float
     fields: list[str] = Entry.dump_fields
+
+
+class MoodleLogin(BaseModel):
+    username: str
+    password: str
 
 
 class MainController(Controller):
@@ -103,6 +107,26 @@ class MainController(Controller):
     @get("/about")
     async def about(self) -> Template:
         return Template("about.html")
+
+    @get("/lms")
+    async def attendance_login(self) -> Template:
+        return Template("report.html")
+
+    @post("/lms")
+    async def render_attendance_report(
+        self,
+        data: Annotated[MoodleLogin, Body(media_type=RequestEncodingType.URL_ENCODED)],
+    ) -> Template:
+        start = time.perf_counter()
+        async with ClientSession() as session:
+            moodle = await Moodle.init(
+                prn=data.username, password=data.password, session=session
+            )
+            reports = await moodle.get_all_reports()
+            return Template(
+                "report.html",
+                context=dict(reports=reports, time=time.perf_counter() - start),
+            )
 
 
 async def init_http_session(app: Litestar):

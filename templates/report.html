@@ -1,0 +1,44 @@
+{% extends "base.html" %} 
+{% block content %} 
+{% if reports %} 
+  <div id="report" class="container column">
+    <div class='timetaken'>Completed in {{ time }}s</div>
+    <table>
+      <thead>
+        <tr>
+          {% for field in reports[0].get_fields() %}
+            <th> {{ field }} </th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for report in reports %} 
+          {{ report.as_html()|safe }}
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <form class="moodle-login container column" method="post">
+    <div class="moodle-form container row">
+      <div class="moodle-labels container column">
+        <span class="moodle-block">PRN</span>
+        <span class="moodle-block">Password</span>
+      </div>
+      <div class="moodle-inputs container column">
+        <input type="text" name="username"> </input>
+        <input type="password" name="password"> </input>
+      </div>
+    </div>
+    <button id="submit" type="submit" class="submit"> Login </button>
+  </form>
+  <span id="note" class="subtext">Login with your moodle credentials. The report can take upto 20 seconds to generate.</span>
+
+  <script>
+    $("#submit").on("click", (e) => {
+      $("#note").text("Generating report, standby ~")
+    });
+  </script>
+
+{% endif %} 
+{% endblock %}
