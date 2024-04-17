@@ -19,7 +19,7 @@
     }
     button {
         background-color: var(--mantle);
-        border: none;
+        border: 1px solid var(--crust);
     }
     button:hover {
         background-color: var(--pink);
@@ -46,6 +46,15 @@
         align-items: center;
     }
 
+    .form-dates input {
+        border: 1px solid var(--mauve);
+    }
+
+    .form-dates button {
+        padding: 3px 5px;
+    }
+
+
     .form-grid {
         display: flex;
         flex-wrap: wrap;
@@ -68,7 +77,7 @@
         flex-direction: column;
         gap: 5px;
         padding: 10px;
-        border: 1px solid var(--surface1);
+        border: 1px solid var(--lavender);
         border-radius: 10px;
         justify-content: space-between;
     }
@@ -141,14 +150,14 @@
     .date-block {
         background-color: var(--mauve);
         color: var(--base);
-        padding: 1px 5px;
+        padding: 2px 5px;
     }
 
     .type-block {
         background-color: var(--lavender);
         color: var(--base);
         padding: 1px 5px;
-        font-size: 11pt;
+        font-size: 10pt;
     }
 
 
@@ -165,7 +174,8 @@
 
     .filter {
         flex: 1;
-        font-size: 11pt;
+        font-size: 10pt;
+        border: 1px solid var(--crust);
     } 
 
     .rule-controls {
@@ -177,14 +187,25 @@
     }
 
     .rule_name {
-        font-size: 11pt;
+        font-size: 10pt;
+        border: 1px solid var(--lavender);
     }
+
+    .subtext {
+        color: var(--subtext0);
+    }
+
 
 </style>
 
-    <p style='text-align: center; margin: 0; padding: 0;'> Welcome! <br> Configure your filters to get started: </p>
-
     <div class="container column form-items">
+        <p style='text-align: left; margin: 0; padding: 0; max-width: 700px;'> 
+            Welcome! Configure your filters to get started.
+            <br>
+            <span class="subtext">
+                Check out the <a href="/about">About</a> page first!
+            </span>
+        </p>
         <div class="container row form-dates">
             <div>
                 <span class="date-block">Start</span><input id="start" name="start" type="date" value="{{ preload['start'] }}"/>
