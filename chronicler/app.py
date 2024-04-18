@@ -268,7 +268,10 @@ app = Litestar(
     on_shutdown=[close_http_session],
     cors_config=cors_config,
     allowed_hosts=allowed_hosts,
-    middleware=[ServerSideSessionConfig().middleware, rate_limit_conf.middleware],
+    middleware=[
+        ServerSideSessionConfig(renew_on_access=True).middleware,
+        rate_limit_conf.middleware,
+    ],
     stores={"sessions": FileStore(path=Path("session_data"))},
     exception_handlers={HTTPException: http_error_handler},
 )
