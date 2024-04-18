@@ -17,8 +17,28 @@
     color: var(--yellow);
   }
 
+  @keyframes gradient-text {
+    to {
+      background-position: 150% center;
+    }
+  }
+
   .logo {
-    color: var(--green);
+    animation: gradient-text 8s linear infinite;
+    color: transparent;
+    background-clip: text;
+    background-size: 150% auto;
+    background-image: linear-gradient(
+      45deg,
+      var(--green),
+      var(--green),
+      var(--sky),
+      var(--teal),
+      var(--sapphire),
+      var(--blue),
+      var(--green),
+      var(--green)
+    );
     font-size: 30px;
     font-family: "JetBrains Mono", monospace;
     text-align: center;
