@@ -7,6 +7,14 @@
 		{% endblock %}
 		<link rel="icon" type="image/x-icon" href="/static/favicon.ico">
         <link rel="stylesheet" href="./static/style.css" />
+        <script type="module">
+          import init, { start } from "./static/pkg/manzar.js";
+          async function run() {
+            await init();
+            await start("./static/kitty.gif");
+          }
+          run();
+        </script>
         <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
         <style>
             @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap');

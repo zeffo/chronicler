@@ -19,6 +19,7 @@ from litestar.params import Body
 from litestar.middleware.session.server_side import ServerSideSessionConfig
 from litestar.middleware.rate_limit import RateLimitConfig
 from litestar.stores.file import FileStore
+from litestar.exceptions import HTTPException
 
 from .core import TimetableClient, Entry
 from .lms import Moodle
@@ -132,6 +133,10 @@ async def close_http_session(app: Litestar):
         await session.close()
 
 
+def http_error_handler(request: Request, exc: HTTPException) -> Template:
+    return Template("error.html", context={"request": request, "exc": exc})
+
+
 cors_config = CORSConfig(
     allow_origins=[
         "https://chronicler.zeffo.me",
@@ -168,4 +173,5 @@ app = Litestar(
     allowed_hosts=allowed_hosts,
     middleware=[ServerSideSessionConfig().middleware, rate_limit_conf.middleware],
     stores={"sessions": FileStore(path=Path("session_data"))},
+    exception_handlers={HTTPException: http_error_handler},
 )

@@ -286,3 +286,7 @@ td {
     color: var(--peach);
   }
 }
+
+#Manzar {
+  z-index: -999;
+}
