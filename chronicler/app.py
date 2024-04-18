@@ -4,7 +4,7 @@ from datetime import datetime, date, time as dtime
 from pathlib import Path
 from typing import Annotated, Any
 from aiohttp import ClientSession
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from litestar import Controller, Request, Response, get, post
 from litestar.datastructures import State
 from litestar.response import Template
@@ -53,7 +53,12 @@ class MoodleLogin(BaseModel):
 
 class FreeClassesForm(BaseModel):
     time: dtime | None = None
+    date_: date | None = Field(None, alias="date")
     room: str
+
+    @property
+    def date(self):
+        return self.date_
 
 
 class FreeClassesPayload(BaseModel):
@@ -138,7 +143,7 @@ class MainController(Controller):
         self, state: State, data: FreeClassesForm
     ) -> FreeClassesPayload:
         start = time.perf_counter()
-        now = datetime.now()
+        now = data.date or datetime.now()
         entries: list[Entry] = await state.client.fetch(start=now, end=now)
         rooms: dict[int, list[Entry]] = {}
         for entry in entries:
