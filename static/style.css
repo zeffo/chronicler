@@ -35,7 +35,7 @@ body {
 }
 
 .content {
-  padding: 20px;
+  padding: 10px;
 }
 
 .centered {
@@ -211,11 +211,13 @@ td {
 .add_filter,
 #submit,
 .delete_rule {
-  height: 35px;
+  padding: 5px;
+  border: 2px solid var(--crust);
 }
 
 .timetaken {
   color: var(--subtext0);
+  padding: 10px;
 }
 
 #delete_filter {
@@ -299,7 +301,6 @@ td {
   display: flex;
   flex: 1;
   flex-wrap: wrap;
-  padding: 10px 30px;
   gap: 15px;
   justify-content: center;
   max-width: 1000px;
@@ -320,4 +321,32 @@ td {
     background-color: var(--maroon);
     color: var(--base);
   }
+}
+
+.form-block {
+  text-align: center;
+  background-color: var(--mauve);
+  color: var(--base);
+  padding: 2px 5px;
+}
+
+.form-input {
+  border: 1px solid var(--mauve);
+}
+
+.room-select {
+  background-color: var(--surface1);
+  color: var(--text);
+}
+
+#fc-form {
+  padding: 10px;
+}
+
+.g-15 {
+  gap: 15px;
+}
+
+.g-5 {
+  gap: 5px;
 }

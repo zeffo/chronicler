@@ -205,6 +205,7 @@ class TimetableClient:
     def __init__(self, session: ClientSession):
         self.session = session
         self.__types: set[str] = set()
+        self.__rooms: set[int] = set()
 
     async def get_types(self):
         if not self.__types:
@@ -214,6 +215,15 @@ class TimetableClient:
         items = list(self.__types)
         items.sort()
         return items
+
+    async def get_rooms(self):
+        if not self.__rooms:
+            start = datetime.now()
+            end = start + timedelta(weeks=4)
+            self.__rooms = {e.room for e in await self.fetch(start, end)}
+        rooms = list(self.__rooms)
+        rooms.sort()
+        return rooms
 
     async def fetch(
         self,

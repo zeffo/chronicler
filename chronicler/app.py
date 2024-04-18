@@ -1,6 +1,6 @@
 import re
 import time
-from datetime import datetime, date
+from datetime import datetime, date, time as dtime
 from pathlib import Path
 from typing import Annotated, Any
 from aiohttp import ClientSession
@@ -49,6 +49,16 @@ class TimetableResponse(BaseModel):
 class MoodleLogin(BaseModel):
     username: str
     password: str
+
+
+class FreeClassesForm(BaseModel):
+    time: dtime | None = None
+    room: str
+
+
+class FreeClassesPayload(BaseModel):
+    time: float
+    entries: dict[int, list[tuple[str, str]]]
 
 
 class MainController(Controller):
@@ -123,13 +133,15 @@ class MainController(Controller):
                 context=dict(reports=reports, time=time.perf_counter() - start),
             )
 
-    @get("/fc")
-    async def render_free_classrooms(self, state: State) -> Template:
+    @post("/fc")
+    async def render_free_classrooms(
+        self, state: State, data: FreeClassesForm
+    ) -> FreeClassesPayload:
         start = time.perf_counter()
         now = datetime.now()
-        data: list[Entry] = await state.client.fetch(start=now, end=now)
+        entries: list[Entry] = await state.client.fetch(start=now, end=now)
         rooms: dict[int, list[Entry]] = {}
-        for entry in data:
+        for entry in entries:
             bucket = rooms.setdefault(entry.room, [])
             bucket.append(entry)
         for bucket in rooms.values():
@@ -165,13 +177,23 @@ class MainController(Controller):
                         ),
                     )
                 )
-        return Template(
-            "fc.html",
-            context={
-                "classes": sorted(free.items(), key=lambda t: t[0]),
-                "time": time.perf_counter() - start,
-            },
+        sorted_entries: dict[int, list[tuple[str, str]]] = {}
+        for room, bucket in sorted(free.items(), key=lambda t: t[0]):
+            f = "%H:%M"
+            if data.room == "All" or room == int(data.room):
+                new = []
+                for s, e in bucket:
+                    if data.time is None or (s.time() <= data.time <= e.time()):
+                        new.append((s.strftime(f), e.strftime(f)))
+                sorted_entries[room] = new
+
+        return FreeClassesPayload(
+            time=time.perf_counter() - start, entries=sorted_entries
         )
+
+    @get("/fc")
+    async def free_classrooms(self, state: State) -> Template:
+        return Template("fc.html", context={"classes": await state.client.get_rooms()})
 
 
 async def init_http_session(app: Litestar):
