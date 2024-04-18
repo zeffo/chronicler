@@ -88,6 +88,8 @@ class MainController(Controller):
                     if re.search(filt, item.full_desc):
                         bucket.append(item)
                         break
+            elif not data.types:  # if no types are specified, render the whole table
+                bucket.append(item)
         for bucket in entries.values():
             bucket.sort(key=lambda e: e.start)
 
@@ -156,7 +158,7 @@ allowed_hosts = AllowedHostsConfig(
     ]
 )
 
-rate_limit_conf = RateLimitConfig(("minute", 60))
+rate_limit_conf = RateLimitConfig(("minute", 30))
 
 app = Litestar(
     route_handlers=[
