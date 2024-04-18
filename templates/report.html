@@ -1,4 +1,13 @@
 {% extends "base.html" %} 
+
+{% block head %}
+    <meta property="og:description" content="sicsr attendance report without the bs" />
+    <meta property="og:title" content="chronicler" />
+    <meta property="og:site_name" content="chronicler">
+	<meta name="theme-color" content="#A6E3A1">
+	<title>chronicler/lms</title>
+{% endblock %}
+
 {% block content %} 
 {% if reports %} 
   <div id="report" class="container column">
