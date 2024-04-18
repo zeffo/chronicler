@@ -1,0 +1,39 @@
+{% extends "base.html" %} {% block head %}
+<meta property="og:description" content="sicsr timetable without the bs" />
+<meta property="og:title" content="chronicler" />
+<meta property="og:site_name" content="chronicler" />
+<meta name="theme-color" content="#A6E3A1" />
+<title>chronicler/free_classes</title>
+{% endblock %} {% block content %}
+
+<div class="timetaken">Completed in {{ time }}s</div>
+
+<div id="free-classes">
+  {% for room, bucket in classes %}
+  <div>
+    <table class="room">
+      <thead>
+        <tr>
+          <th colspan="3" class="room_number">{{ room }}</th>
+        </tr>
+        <tr>
+          <th>start</th>
+          <th>end</th>
+          <th>duration</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for (start, end) in bucket %}
+        <tr>
+          <td>{{ start.strftime("%H:%M") }}</td>
+          <td>{{ end.strftime("%H:%M") }}</td>
+          <td>{{ ((end - start).total_seconds() // 60)|int }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

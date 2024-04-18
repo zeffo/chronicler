@@ -290,3 +290,34 @@ td {
 #Manzar {
   z-index: -999;
 }
+
+.room > thead > tr > th.room_number {
+  text-align: center;
+  color: var(--maroon);
+}
+#free-classes {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  padding: 10px 30px;
+  gap: 15px;
+  justify-content: center;
+  max-width: 1000px;
+  margin-bottom: 100px;
+  table {
+    border-collapse: collapse;
+  }
+  th,
+  td {
+    border: 1px solid var(--maroon);
+    text-align: left;
+    padding: 5px;
+  }
+  th {
+    color: var(--peach);
+  }
+  th.room_number {
+    background-color: var(--maroon);
+    color: var(--base);
+  }
+}

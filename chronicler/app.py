@@ -123,6 +123,56 @@ class MainController(Controller):
                 context=dict(reports=reports, time=time.perf_counter() - start),
             )
 
+    @get("/fc")
+    async def render_free_classrooms(self, state: State) -> Template:
+        start = time.perf_counter()
+        now = datetime.now()
+        data: list[Entry] = await state.client.fetch(start=now, end=now)
+        rooms: dict[int, list[Entry]] = {}
+        for entry in data:
+            bucket = rooms.setdefault(entry.room, [])
+            bucket.append(entry)
+        for bucket in rooms.values():
+            bucket.sort(key=lambda e: e.start)
+
+        free: dict[int, list[tuple[datetime, datetime]]] = {}
+        for room, bucket in rooms.items():
+            if not bucket:
+                continue
+            free_bucket = free.setdefault(room, [])
+            start_hour = bucket[0].start
+            if start_hour.hour != 7:
+                free_bucket.append(
+                    (
+                        datetime.now().replace(
+                            hour=7, minute=30, second=0, microsecond=0
+                        ),
+                        start_hour,
+                    )
+                )
+            for i in range(len(bucket) - 1):
+                entry = bucket[i]
+                next_entry = bucket[i + 1]
+                if entry.end < next_entry.start:
+                    free_bucket.append((entry.end, next_entry.start))
+            last_hour = bucket[-1].end
+            if last_hour.hour != 20:
+                free_bucket.append(
+                    (
+                        last_hour,
+                        datetime.now().replace(
+                            hour=20, minute=30, second=0, microsecond=0
+                        ),
+                    )
+                )
+        return Template(
+            "fc.html",
+            context={
+                "classes": sorted(free.items(), key=lambda t: t[0]),
+                "time": time.perf_counter() - start,
+            },
+        )
+
 
 async def init_http_session(app: Litestar):
     session = ClientSession()
