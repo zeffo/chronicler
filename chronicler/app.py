@@ -1,12 +1,10 @@
 import re
-import secrets
-import os
 import time
 from datetime import datetime, date
 from pathlib import Path
 from typing import Annotated, Any
 from aiohttp import ClientSession
-from pydantic import BaseModel, BeforeValidator
+from pydantic import BaseModel
 from litestar import Controller, Request, get, post
 from litestar.datastructures import State
 from litestar.response import Template
@@ -14,22 +12,16 @@ from litestar import Litestar
 from litestar.contrib.jinja import JinjaTemplateEngine
 from litestar.template.config import TemplateConfig
 from litestar.config.cors import CORSConfig
-from litestar.config.csrf import CSRFConfig
 from litestar.config.allowed_hosts import AllowedHostsConfig
 from litestar.static_files import create_static_files_router
 from litestar.enums import RequestEncodingType
 from litestar.params import Body
-from litestar.contrib.sqlalchemy.base import UUIDAuditBase, UUIDBase
-from litestar.contrib.sqlalchemy.plugins import (
-    AsyncSessionConfig,
-    SQLAlchemyAsyncConfig,
-    SQLAlchemyInitPlugin,
-)
 from litestar.middleware.session.server_side import ServerSideSessionConfig
+from litestar.middleware.rate_limit import RateLimitConfig
 from litestar.stores.file import FileStore
 
 from .core import TimetableClient, Entry
-from .lms import Moodle, Report
+from .lms import Moodle
 
 
 class Payload(BaseModel):
@@ -159,21 +151,7 @@ allowed_hosts = AllowedHostsConfig(
     ]
 )
 
-session_config = AsyncSessionConfig(expire_on_commit=False)
-sqlalchemy_config = SQLAlchemyAsyncConfig(
-    connection_string=os.getenv("DATABASE_URL"),
-    session_config=session_config,
-)
-sqlalchemy_plugin = SQLAlchemyInitPlugin(config=sqlalchemy_config)
-
-
-async def on_startup() -> None:
-    """Initializes the database."""
-    return
-    async with sqlalchemy_config.get_engine().begin() as conn:
-        await conn.run_sync(UUIDBase.metadata.create_all)
-        await conn.run_sync(UUIDAuditBase.metadata.create_all)
-
+rate_limit_conf = RateLimitConfig(("minute", 60))
 
 app = Litestar(
     route_handlers=[
@@ -184,11 +162,10 @@ app = Litestar(
         directory=Path("templates"),
         engine=JinjaTemplateEngine,
     ),
-    # plugins=[sqlalchemy_plugin],
-    on_startup=[init_http_session, on_startup],
+    on_startup=[init_http_session],
     on_shutdown=[close_http_session],
     cors_config=cors_config,
     allowed_hosts=allowed_hosts,
-    middleware=[ServerSideSessionConfig().middleware],
+    middleware=[ServerSideSessionConfig().middleware, rate_limit_conf.middleware],
     stores={"sessions": FileStore(path=Path("session_data"))},
 )
