@@ -47,9 +47,12 @@ class Entry(BaseModel):
         return f'<a href="/search?room={self.room}&start={self.start.hour}&end={self.end.hour}</a>'
 
     def dump(self) -> dict[str, Any]:
+        def fmt(d: datetime) -> str:
+            return d.strftime("%H:%M")
+
         return {
-            "start": fmtdt(self.start),
-            "end": fmtdt(self.end),
+            "start": fmt(self.start),
+            "end": fmt(self.end),
             "class": self.full_desc,
             "room": self.room,
             "duration": self.duration.seconds // 60,
