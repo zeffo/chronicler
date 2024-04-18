@@ -24,6 +24,8 @@ from litestar.exceptions import HTTPException
 from .core import TimetableClient, Entry
 from .lms import Moodle
 
+APP_START_TIME = datetime.now()
+
 
 class Payload(BaseModel):
     start: date | None = None
@@ -64,6 +66,11 @@ class FreeClassesForm(BaseModel):
 class FreeClassesPayload(BaseModel):
     time: float
     entries: dict[int, list[tuple[str, str]]]
+
+
+class Statistics(BaseModel):
+    sessions: int
+    uptime: float
 
 
 class MainController(Controller):
@@ -199,6 +206,12 @@ class MainController(Controller):
     @get("/fc")
     async def free_classrooms(self, state: State) -> Template:
         return Template("fc.html", context={"classes": await state.client.get_rooms()})
+
+    @get("/stats")
+    async def statistics(self) -> Statistics:
+        uptime = datetime.now() - APP_START_TIME
+        sessions = len(list(Path("./session_data").glob("*")))
+        return Statistics(uptime=uptime.total_seconds(), sessions=sessions)
 
 
 async def init_http_session(app: Litestar):
