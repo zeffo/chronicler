@@ -218,7 +218,7 @@ def http_error_handler(request: Request, exc: HTTPException) -> Template | Respo
 
 cors_config = CORSConfig(
     allow_origins=[
-        "https://chronicler.zeffo.me",
+        "https://chr.zeffo.me",
         "https://chronicler.up.railway.app",
         "127.0.0.1",
         "localhost",
@@ -228,7 +228,7 @@ cors_config = CORSConfig(
 allowed_hosts = AllowedHostsConfig(
     allowed_hosts=[
         "chronicler.up.railway.app",
-        "chronicler.zeffo.me",
+        "chr.zeffo.me",
         "localhost",
         "127.0.0.1",
         "192.168.1.254",
