@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Annotated, Any
 from aiohttp import ClientSession
 from pydantic import BaseModel
-from litestar import Controller, Request, get, post
+from litestar import Controller, Request, Response, get, post
 from litestar.datastructures import State
 from litestar.response import Template
 from litestar import Litestar
@@ -207,8 +207,13 @@ async def close_http_session(app: Litestar):
         await session.close()
 
 
-def http_error_handler(request: Request, exc: HTTPException) -> Template:
-    return Template("error.html", context={"request": request, "exc": exc})
+def http_error_handler(request: Request, exc: HTTPException) -> Template | Response:
+    if request.method == "GET":
+        return Template("error.html", context={"request": request, "exc": exc})
+    return Response(
+        content=exc.detail,
+        status_code=exc.status_code,
+    )
 
 
 cors_config = CORSConfig(

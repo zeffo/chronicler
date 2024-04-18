@@ -12,62 +12,62 @@
 
 {% block content %}
 
-    <span style='text-align: left; margin: 0; padding: 0; max-width: 700px;'> 
-        Welcome! Configure your filters to get started.
-        <br>
-        <span class="subtext">
-            Check out the <a href="/about">About</a> page first!
-        </span>
+<span style='text-align: left; margin: 0; padding: 0; max-width: 700px;'> 
+    Welcome! Configure your filters to get started.
+    <br>
+    <span class="subtext">
+        Check out the <a href="/about">About</a> page first!
     </span>
-    <div class="container column form-items">
+</span>
+<div class="container column form-items">
 
-        <div class="container row form-dates">
-            <div>
-                <span class="date-block">Start</span><input id="start" name="start" type="date" value="{{ preload['start'] }}"/>
-            </div>
-            <div>
-                <span class="date-block">End</span><input id="end" name="end" type="date" value="{{ preload['end'] }}" />
-            </div>
-            <div>
-                <button type="button" id="today">Today</button> 
-            </div>
-            <div>
-                <button type="button" id="this_week">This Week</button> 
-            </div>
+    <div class="container row form-dates">
+        <div>
+            <span class="date-block">Start</span><input id="start" name="start" type="date" value="{{ preload['start'] }}"/>
         </div>
-        <div class="form-grid">
-            {% for type in preload["types"] %}
-                <div class="rule">
-                    <div class="type-row container row">
-                        <span class="type-block">Type</span><select class="rule_name">
-                            {% for stype in types %}
-                                {% if type == stype %}
-                                    {% set selected="selected" %}
-                                {% else %}
-                                    {% set selected="" %}
-                                {% endif %}
-                                <option value="{{ stype }}" {{ selected }} > {{ stype }} </option>
-                            {% endfor %}
-                        </select> 
-                    </div> <br>
-                    <div class="form-filters container column">
-                        {% for filter in preload["types"][type] %}
-                        <div class="filter-row"><input type='text' class='filter' value="{{ filter }}"/><button type='button' class='delete_filter'>X</button></div>
-                        {% endfor %}
-                    </div>
-                    <div class="rule-controls container column">
-                        <button type="button" class="add_filter"> Add Filter </button>
-                        <button type="button" class="delete_rule"> Delete Rule </button>
-                    </div>
-                </div>
-            {% endfor %}
+        <div>
+            <span class="date-block">End</span><input id="end" name="end" type="date" value="{{ preload['end'] }}" />
         </div>
-        <button id="add_rule" type="button"> Add Rule </button>
-        <button id="submit" type="button"> Submit </button>
+        <div>
+            <button type="button" id="today">Today</button> 
+        </div>
+        <div>
+            <button type="button" id="this_week">This Week</button> 
+        </div>
     </div>
-
-<div id="result">
+    <div class="form-grid">
+        {% for type in preload["types"] %}
+            <div class="rule">
+                <div class="type-row container row">
+                    <span class="type-block">Type</span><select class="rule_name">
+                        {% for stype in types %}
+                            {% if type == stype %}
+                                {% set selected="selected" %}
+                            {% else %}
+                                {% set selected="" %}
+                            {% endif %}
+                            <option value="{{ stype }}" {{ selected }} > {{ stype }} </option>
+                        {% endfor %}
+                    </select> 
+                </div> <br>
+                <div class="form-filters container column">
+                    {% for filter in preload["types"][type] %}
+                    <div class="filter-row"><input type='text' class='filter' value="{{ filter }}"/><button type='button' class='delete_filter'>X</button></div>
+                    {% endfor %}
+                </div>
+                <div class="rule-controls container column">
+                    <button type="button" class="add_filter"> Add Filter </button>
+                    <button type="button" class="delete_rule"> Delete Rule </button>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <button id="add_rule" type="button"> Add Rule </button>
+    <button id="submit" type="button"> Submit </button>
 </div>
+
+<div class="timetaken"></div>
+<div id="result"></div>
 
 <script>
     $( document ).ready( () => {
@@ -151,7 +151,7 @@
             });
             $.ajax({"data": JSON.stringify(payload), "method": "POST", "contentType": "application/json"}).done((data) => {
                 let result = $("#result");
-                result.append(`<div class='timetaken'>Completed in ${data['time']}s</div>`)
+                $(".timetaken").text(`Completed in ${data['time']}s`);
                 for (const [date, entries] of Object.entries(data["entries"])) {
                     result.append(`<div class='result_items'><div class="result_date">${date}</div></div>`) 
                     if (entries.length == 0) {
@@ -178,6 +178,8 @@
                         }
                     }
                 }
+            }).fail((jqxhr, _text) => {
+                $(".timetaken").text(`Request failed: ${jqxhr.status} ${jqxhr.statusText}`);
             });
         });
     });
