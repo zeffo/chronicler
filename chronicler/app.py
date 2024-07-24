@@ -65,7 +65,7 @@ class FreeClassesForm(BaseModel):
 
 class FreeClassesPayload(BaseModel):
     time: float
-    entries: dict[int, list[tuple[str, str]]]
+    entries: dict[str, list[tuple[str, str]]]
 
 
 class Statistics(BaseModel):
@@ -152,14 +152,14 @@ class MainController(Controller):
         start = time.perf_counter()
         now = data.date or datetime.now()
         entries: list[Entry] = await state.client.fetch(start=now, end=now)
-        rooms: dict[int, list[Entry]] = {}
+        rooms: dict[str, list[Entry]] = {}
         for entry in entries:
             bucket = rooms.setdefault(entry.room, [])
             bucket.append(entry)
         for bucket in rooms.values():
             bucket.sort(key=lambda e: e.start)
 
-        free: dict[int, list[tuple[datetime, datetime]]] = {}
+        free: dict[str, list[tuple[datetime, datetime]]] = {}
         for room, bucket in rooms.items():
             if not bucket:
                 continue
@@ -189,7 +189,7 @@ class MainController(Controller):
                         ),
                     )
                 )
-        sorted_entries: dict[int, list[tuple[str, str]]] = {}
+        sorted_entries: dict[str, list[tuple[str, str]]] = {}
         for room, bucket in sorted(free.items(), key=lambda t: t[0]):
             f = "%H:%M"
             if data.room == "All" or room == int(data.room):

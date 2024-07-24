@@ -31,7 +31,7 @@ DateTime = Annotated[datetime, BeforeValidator(dt_conv)]
 class Entry(BaseModel):
     brief_desc: str = Field(validation_alias="Brief description")
     area: str = Field(validation_alias="Area")
-    room: int = Field(validation_alias="Room")
+    room: str = Field(validation_alias="Room")
     start: DateTime = Field(validation_alias="Start time")
     end: DateTime = Field(validation_alias="End time")
     duration: Annotated[timedelta, BeforeValidator(td_conv)] = Field(
@@ -204,24 +204,24 @@ async def fetch(
 class TimetableClient:
     def __init__(self, session: ClientSession):
         self.session = session
-        self.__types: set[str] = set()
-        self.__rooms: set[int] = set()
+        self._types: set[str] = set()
+        self.rooms: set[str] = set()
 
     async def get_types(self):
-        if not self.__types:
+        if not self._types:
             start = datetime.now()
             end = start + timedelta(weeks=4)
-            self.__types = {e.type for e in await self.fetch(start, end)}
-        items = list(self.__types)
+            self._types = {e.type for e in await self.fetch(start, end)}
+        items = list(self._types)
         items.sort()
         return items
 
-    async def get_rooms(self):
-        if not self.__rooms:
+    async def getrooms(self):
+        if not self.rooms:
             start = datetime.now()
             end = start + timedelta(weeks=4)
-            self.__rooms = {e.room for e in await self.fetch(start, end)}
-        rooms = list(self.__rooms)
+            self.rooms = {e.room for e in await self.fetch(start, end)}
+        rooms = list(self.rooms)
         rooms.sort()
         return rooms
 
